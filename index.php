@@ -6,7 +6,7 @@
       <meta name="description" content="A complete landing page solution for any business">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="icon" href="assets/img/favicon/favicon.ico">
-      <title>SEO Landing Page</title>
+      <title>SSTik | SEO Landing Page</title>
       <link href="https://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet">
       <link rel="stylesheet" href="assets/vendor/strokegap/style.css">
       <link rel="stylesheet" href="assets/vendor/font-awesome/css/font-awesome.min.css">
