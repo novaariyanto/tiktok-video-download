@@ -1,290 +1,605 @@
-<?php
-
-$store_locally = true; /* change to false if you don't want to host videos locally */ 
-
-function generateRandomString($length = 10) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
-    }
-    return $randomString;
-}
-
-function downloadVideo($video_url, $geturl = false)
-{
-    $ch = curl_init();
-    $headers = array(
-        'Range: bytes=0-',
-    );
-    $options = array(
-        CURLOPT_URL            => $video_url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HEADER         => false,
-        CURLOPT_HTTPHEADER     => $headers,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLINFO_HEADER_OUT    => true,
-        CURLOPT_USERAGENT => 'okhttp',
-        CURLOPT_ENCODING       => "utf-8",
-        CURLOPT_AUTOREFERER    => true,
-        CURLOPT_COOKIEJAR      => 'cookie.txt',
-	CURLOPT_COOKIEFILE     => 'cookie.txt',
-        CURLOPT_REFERER        => 'https://www.tiktok.com/',
-        CURLOPT_CONNECTTIMEOUT => 30,
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_MAXREDIRS      => 10,
-    );
-    curl_setopt_array( $ch, $options );
-    if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
-      curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    }
-    $data = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    if ($geturl === true)
-    {
-        return curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
-    }
-    curl_close($ch);
-    $filename = "user_videos/" . generateRandomString() . ".mp4";
-    $d = fopen($filename, "w");
-    fwrite($d, $data);
-    fclose($d);
-    return $filename;
-}
-
-if (isset($_GET['url']) && !empty($_GET['url'])) {
-    if ($_SERVER['HTTP_REFERER'] != "") {
-        $url = $_GET['url'];
-        $name = downloadVideo($url);
-        echo $name;
-        exit();
-    }
-    else
-    {
-        echo "";
-        exit();
-    }
-}
-
-function getContent($url, $geturl = false)
-  {
-    $ch = curl_init();
-    $options = array(
-        CURLOPT_URL            => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HEADER         => false,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_USERAGENT => 'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Mobile Safari/537.36',
-        CURLOPT_ENCODING       => "utf-8",
-        CURLOPT_AUTOREFERER    => false,
-        CURLOPT_COOKIEJAR      => 'cookie.txt',
-	CURLOPT_COOKIEFILE     => 'cookie.txt',
-        CURLOPT_REFERER        => 'https://www.tiktok.com/',
-        CURLOPT_CONNECTTIMEOUT => 30,
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_MAXREDIRS      => 10,
-    );
-    curl_setopt_array( $ch, $options );
-    if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
-      curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    }
-    $data = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    if ($geturl === true)
-    {
-        return curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
-    }
-    curl_close($ch);
-    return strval($data);
-  }
-
-  function getKey($playable)
-  {
-  	$ch = curl_init();
-  	$headers = [
-    'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'Accept-Encoding: gzip, deflate, br',
-    'Accept-Language: en-US,en;q=0.9',
-    'Range: bytes=0-200000'
-	];
-
-    $options = array(
-        CURLOPT_URL            => $playable,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HEADER         => false,
-        CURLOPT_HTTPHEADER     => $headers,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_USERAGENT => 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:28.0) Gecko/20100101 Firefox/28.0',
-        CURLOPT_ENCODING       => "utf-8",
-        CURLOPT_AUTOREFERER    => false,
-        CURLOPT_COOKIEJAR      => 'cookie.txt',
-	CURLOPT_COOKIEFILE     => 'cookie.txt',
-        CURLOPT_REFERER        => 'https://www.tiktok.com/',
-        CURLOPT_CONNECTTIMEOUT => 30,
-        CURLOPT_SSL_VERIFYHOST => false,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_MAXREDIRS      => 10,
-    );
-    curl_setopt_array( $ch, $options );
-    if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
-      curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    }
-    $data = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    $tmp = explode("vid:", $data);
-    if(count($tmp) > 1){
-    	$key = trim(explode("%", $tmp[1])[0]);
-    }
-    else
-    {
-    	$key = "";
-    }
-    return $key;
-  }
-?>
-
 <!DOCTYPE html>
-<html>
-<head>
-	<title>TikTok Video Downloader</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-<link href="https://fonts.googleapis.com/css2?family=Gotu&display=swap" rel="stylesheet">
-<style type="text/css">
-	html, body
-	{
-		font-family: "Gotu"
-	}
-	input
-	{
-		padding: 5px;
-		border-radius: 10px;
-		border-style: solid;
-		border-color: blue;
-		transition-duration: 0.5s;
-		width: 80%;
-	}
-	input:focus
-	{
-		border-color: skyblue;
-		transition-duration: 0.5s;
-	}
-</style>
-</head>
-<body class="bg-light">
-	<div class="text-center p-5">
-		<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjlweCIgaGVpZ2h0PSIzMnB4IiB2aWV3Qm94PSIwIDAgMjkgMzIiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDU1LjIgKDc4MTgxKSAtIGh0dHBzOi8vc2tldGNoYXBwLmNvbSAtLT4KICAgIDx0aXRsZT7nvJbnu4QgMjwvdGl0bGU+CiAgICA8ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz4KICAgIDxnIGlkPSLpobXpnaIxIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8ZyBpZD0i57yW57uELTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuOTc5MjM2LCAwLjAwMDAwMCkiIGZpbGwtcnVsZT0ibm9uemVybyI+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMC43OTA3NjQ1LDEyLjMzIEwxMC43OTA3NjQ1LDExLjExIEMxMC4zNjcyNjI5LDExLjA0Mjg4ODcgOS45Mzk1MDY3NCwxMS4wMDYxMjg0IDkuNTEwNzY0NDgsMTAuOTk5OTc4NiBDNS4zNTk5NjU0OSwxMC45OTEyMjI4IDEuNjg1MDk2NzksMTMuNjgxMDIwNSAwLjQzODY2NzY5NCwxNy42NDAyNjU4IEMtMC44MDc3NjEzOTksMjEuNTk5NTExMiAwLjY2MzUwNTg0MiwyNS45MDkzODg3IDQuMDcwNzY0NDgsMjguMjggQzEuNTE4NDg0ODQsMjUuNTQ4NDgxNiAwLjgwOTc5OTU0NSwyMS41NzIwODM0IDIuMjYxMjY4MTcsMTguMTI3MDA1MyBDMy43MTI3MzY3OSwxNC42ODE5MjczIDcuMDUzMjk1NDUsMTIuNDExNTQyOCAxMC43OTA3NjQ1LDEyLjMzIEwxMC43OTA3NjQ1LDEyLjMzIFoiIGlkPSLot6/lvoQiIGZpbGw9IiMyNUY0RUUiPjwvcGF0aD4KICAgICAgICAgICAgPHBhdGggZD0iTTExLjAyMDc2NDUsMjYuMTUgQzEzLjM0MTUyODcsMjYuMTQ2ODc3NiAxNS4yNDkxNjYyLDI0LjMxODU0MTQgMTUuMzUwNzY0NSwyMiBMMTUuMzUwNzY0NSwxLjMxIEwxOS4xMzA3NjQ1LDEuMzEgQzE5LjA1MzYwNjgsMC44Nzc2ODIzMjIgMTkuMDE2NzgxOCwwLjQzOTEzMDk5MiAxOS4wMjA3NjQ1LDAgTDEzLjg1MDc2NDUsMCBMMTMuODUwNzY0NSwyMC42NyBDMTMuNzY0Nzk4LDIzLjAwMDMzODggMTEuODUyNjg1MywyNC44NDYyMTIgOS41MjA3NjQ0OCwyNC44NSBDOC44MjM5MDkxNCwyNC44NDQwNjcgOC4xMzg0Mjg4NCwyNC42NzI2OTY5IDcuNTIwNzY0NDgsMjQuMzUgQzguMzMyNjgyNDUsMjUuNDc0OTE1NCA5LjYzMzQ2MjAzLDI2LjE0Mzg4NzggMTEuMDIwNzY0NSwyNi4xNSBaIiBpZD0i6Lev5b6EIiBmaWxsPSIjMjVGNEVFIj48L3BhdGg+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0yNi4xOTA3NjQ1LDguMzMgTDI2LjE5MDc2NDUsNy4xOCBDMjQuNzk5NjQsNy4xODA0NzYyNSAyMy40MzkzNzgxLDYuNzY5OTYyNDIgMjIuMjgwNzY0NSw2IEMyMy4yOTY0NDQ2LDcuMTgwNzE3NjkgMjQuNjY4OTYyMiw3Ljk5ODYxMTc3IDI2LjE5MDc2NDUsOC4zMyBMMjYuMTkwNzY0NSw4LjMzIFoiIGlkPSLot6/lvoQiIGZpbGw9IiMyNUY0RUUiPjwvcGF0aD4KICAgICAgICAgICAgPHBhdGggZD0iTTIyLjI4MDc2NDUsNiBDMjEuMTM5NDY3NSw0LjcwMDMzMTYxIDIwLjUxMDI5NjcsMy4wMjk2NTIxNiAyMC41MTA3NjQ1LDEuMyBMMTkuMTMwNzY0NSwxLjMgQzE5LjQ5MDk4MTIsMy4yMzI2ODUxOSAyMC42MzAwMzgzLDQuOTMyMjMwNjcgMjIuMjgwNzY0NSw2IEwyMi4yODA3NjQ1LDYgWiIgaWQ9Iui3r+W+hCIgZmlsbD0iI0ZFMkM1NSI+PC9wYXRoPgogICAgICAgICAgICA8cGF0aCBkPSJNOS41MTA3NjQ0OCwxNi4xNyBDNy41MTkyMTgxNCwxNi4xODAyMTc4IDUuNzkwMjE2MjYsMTcuNTQ0NTkzIDUuMzE3MjEyMDEsMTkuNDc5MTgwMyBDNC44NDQyMDc3NywyMS40MTM3Njc3IDUuNzQ4NjA5NTYsMjMuNDIyMDA2OSA3LjUxMDc2NDQ4LDI0LjM1IEM2LjU1NTk0ODM0LDIzLjAzMTc3MTggNi40MjEwNjg3MSwyMS4yODk0MzM2IDcuMTYxNjI4ODMsMTkuODM5OTYxMyBDNy45MDIxODg5NiwxOC4zOTA0ODg5IDkuMzkzMDY3MzQsMTcuNDc4Nzc4MiAxMS4wMjA3NjQ1LDE3LjQ4IEMxMS40NTQ3NzUyLDE3LjQ4NTQwODQgMTEuODg1NzkwOCwxNy41NTI3NTQ2IDEyLjMwMDc2NDUsMTcuNjggTDEyLjMwMDc2NDUsMTIuNDIgQzExLjg3Njk5MTksMTIuMzU2NTA1NiAxMS40NDkyNTYyLDEyLjMyMzA4ODcgMTEuMDIwNzY0NSwxMi4zMiBMMTAuNzkwNzY0NSwxMi4zMiBMMTAuNzkwNzY0NSwxNi4zMiBDMTAuMzczNjM2OCwxNi4yMDgxNTQ0IDkuOTQyNDQ5MzQsMTYuMTU3NjI0NiA5LjUxMDc2NDQ4LDE2LjE3IFoiIGlkPSLot6/lvoQiIGZpbGw9IiNGRTJDNTUiPjwvcGF0aD4KICAgICAgICAgICAgPHBhdGggZD0iTTI2LjE5MDc2NDUsOC4zMyBMMjYuMTkwNzY0NSwxMi4zMyBDMjMuNjE1NDcsMTIuMzI1MDE5MyAyMS4xMDcwMjUsMTEuNTA5ODYyMiAxOS4wMjA3NjQ1LDEwIEwxOS4wMjA3NjQ1LDIwLjUxIEMxOS4wMDk3MzUyLDI1Ljc1NDQxNTggMTQuNzU1MTkxOSwzMC4wMDAwMTE2IDkuNTEwNzY0NDgsMzAgQzcuNTYzMTI3ODQsMzAuMDAzNDU1NiA1LjY2MjQwMzIxLDI5LjQwMjQ5MTIgNC4wNzA3NjQ0OCwyOC4yOCBDNi43MjY5ODY3NCwzMS4xMzY4MTA4IDEwLjg2MDgyNTcsMzIuMDc3MTk4OSAxNC40OTE0NzA2LDMwLjY1MDU1ODYgQzE4LjEyMjExNTUsMjkuMjIzOTE4MyAyMC41MDk5Mzc1LDI1LjcyMDg4MjUgMjAuNTEwNzY0NSwyMS44MiBMMjAuNTEwNzY0NSwxMS4zNCBDMjIuNjA0MDI0LDEyLjgzOTk2NjMgMjUuMTE1NTcyNCwxMy42NDQ1MDEzIDI3LjY5MDc2NDUsMTMuNjQgTDI3LjY5MDc2NDUsOC40OSBDMjcuMTg2NTkyNSw4LjQ4ODM5NTM1IDI2LjY4MzkzMTMsOC40MzQ3NzgxNiAyNi4xOTA3NjQ1LDguMzMgWiIgaWQ9Iui3r+W+hCIgZmlsbD0iI0ZFMkM1NSI+PC9wYXRoPgogICAgICAgICAgICA8cGF0aCBkPSJNMTkuMDIwNzY0NSwyMC41MSBMMTkuMDIwNzY0NSwxMCBDMjEuMTEzNDA4NywxMS41MDExODk4IDIzLjYyNTM2MjMsMTIuMzA1ODU0NiAyNi4yMDA3NjQ1LDEyLjMgTDI2LjIwMDc2NDUsOC4zIEMyNC42NzkyNTQyLDcuOTc4NzEyNjUgMjMuMzAzNDQwMyw3LjE3MTQ3NDkxIDIyLjI4MDc2NDUsNiBDMjAuNjMwMDM4Myw0LjkzMjIzMDY3IDE5LjQ5MDk4MTIsMy4yMzI2ODUxOSAxOS4xMzA3NjQ1LDEuMyBMMTUuMzUwNzY0NSwxLjMgTDE1LjM1MDc2NDUsMjIgQzE1LjI3NTE1MjEsMjMuODQ2NzY2NCAxNC4wMzgxOTkxLDI1LjQ0MzAyMDEgMTIuMjY4NzY5LDI1Ljk3NzIzMDIgQzEwLjQ5OTMzODksMjYuNTExNDQwMyA4LjU4NTcwOTQyLDI1Ljg2NjM4MTUgNy41MDA3NjQ0OCwyNC4zNyBDNS43Mzg2MDk1NiwyMy40NDIwMDY5IDQuODM0MjA3NzcsMjEuNDMzNzY3NyA1LjMwNzIxMjAxLDE5LjQ5OTE4MDMgQzUuNzgwMjE2MjYsMTcuNTY0NTkzIDcuNTA5MjE4MTQsMTYuMjAwMjE3OCA5LjUwMDc2NDQ4LDE2LjE5IEM5LjkzNDkwMywxNi4xOTM4NjkzIDEwLjM2NjEzODYsMTYuMjYxMjQ5OSAxMC43ODA3NjQ1LDE2LjM5IEwxMC43ODA3NjQ1LDEyLjM5IEM3LjAyMjMzNzksMTIuNDUzNjY5MSAzLjY1NjUzOTI5LDE0LjczMTk3NjggMi4yMDA5NDU2MSwxOC4xOTc2NzYxIEMwLjc0NTM1MTkzOCwyMS42NjMzNzUzIDEuNDc0OTQ0OTMsMjUuNjYxNzQ3NiA0LjA2MDc2NDQ4LDI4LjM5IEM1LjY2ODA5NTQyLDI5LjQ3NTUwNjMgNy41NzE1ODc4MiwzMC4wMzc4MjI0IDkuNTEwNzY0NDgsMzAgQzE0Ljc1NTE5MTksMzAuMDAwMDExNiAxOS4wMDk3MzUyLDI1Ljc1NDQxNTggMTkuMDIwNzY0NSwyMC41MSBaIiBpZD0i6Lev5b6EIiBmaWxsPSIjMDAwMDAwIj48L3BhdGg+CiAgICAgICAgPC9nPgogICAgPC9nPgo8L3N2Zz4="> <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iOTdweCIgaGVpZ2h0PSIyMnB4IiB2aWV3Qm94PSIwIDAgOTcgMjIiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDU1LjIgKDc4MTgxKSAtIGh0dHBzOi8vc2tldGNoYXBwLmNvbSAtLT4KICAgIDx0aXRsZT7nvJbnu4Q8L3RpdGxlPgogICAgPGRlc2M+Q3JlYXRlZCB3aXRoIFNrZXRjaC48L2Rlc2M+CiAgICA8ZyBpZD0i6aG16Z2iMSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9Iue8lue7hCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC43NzAwMDAsIDAuMjgwMDAwKSIgZmlsbC1ydWxlPSJub256ZXJvIj4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iIzAwMDAwMCIgcG9pbnRzPSIzLjU1MjcxMzY4ZS0xNSAwLjA2IDE2LjEyIDAuMDYgMTQuNjQgNC43MiAxMC40NiA0LjcyIDEwLjQ2IDIxLjcyIDUuMjMgMjEuNzIgNS4yMyA0LjcyIDAuMDEgNC43MiI+PC9wb2x5Z29uPgogICAgICAgICAgICA8cG9seWdvbiBpZD0i6Lev5b6EIiBmaWxsPSIjMDAwMDAwIiBwb2ludHM9IjQyLjUyIDAuMDYgNTkuMDEgMC4wNiA1Ny41MyA0LjcyIDUyLjk5IDQuNzIgNTIuOTkgMjEuNzIgNDcuNzcgMjEuNzIgNDcuNzcgNC43MiA0Mi41MyA0LjcyIj48L3BvbHlnb24+CiAgICAgICAgICAgIDxwb2x5Z29uIGlkPSLot6/lvoQiIGZpbGw9IiMwMDAwMDAiIHBvaW50cz0iMTcuMSA2Ljk1IDIyLjI3IDYuOTUgMjIuMjcgMjEuNzIgMTcuMTQgMjEuNzIiPjwvcG9seWdvbj4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iIzAwMDAwMCIgcG9pbnRzPSIyNC4zMiAwIDI5LjQ4IDAgMjkuNDggMTAuMDkgMzQuNiA1LjA5IDQwLjc2IDUuMDkgMzQuMjkgMTEuMzcgNDEuNTQgMjEuNzIgMzUuODUgMjEuNzIgMzEuMDEgMTQuNTMgMjkuNDggMTYuMDEgMjkuNDggMjEuNzIgMjQuMzIgMjEuNzIiPjwvcG9seWdvbj4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iIzAwMDAwMCIgcG9pbnRzPSI3OS4wMSAwIDg0LjIzIDAgODQuMjMgMTAuMDkgODkuMzQgNS4wOSA5NS41IDUuMDkgODkuMDMgMTEuMzcgOTYuMjMgMjEuNzIgOTAuNTQgMjEuNzIgODUuNzEgMTQuNTMgODQuMjMgMTYuMDEgODQuMjMgMjEuNzIgNzkuMDYgMjEuNzIiPjwvcG9seWdvbj4KICAgICAgICAgICAgPGNpcmNsZSBpZD0i5qSt5ZyG5b2iIiBmaWxsPSIjMDAwMDAwIiBjeD0iMTkuNjkiIGN5PSIyLjY2IiByPSIyLjYiPjwvY2lyY2xlPgogICAgICAgICAgICA8cGF0aCBkPSJNNTguMzUsMTIuODggQzU4LjM1MTU4MTQsOC4yNjY1NzI2OSA2MS45MDA2NDc1LDQuNDMwMDk3NTggNjYuNSw0LjA3IEM2Ni4yNyw0LjA3IDY1Ljk2LDQuMDcgNjUuNzMsNC4wNyBDNjEuMDU1Njk0Niw0LjM0MjY0OTU3IDU3LjQwNDc1NzIsOC4yMTI3NDk1OCA1Ny40MDQ3NTcyLDEyLjg5NSBDNTcuNDA0NzU3MiwxNy41NzcyNTA0IDYxLjA1NTY5NDYsMjEuNDQ3MzUwNCA2NS43MywyMS43MiBDNjUuOTYsMjEuNzIgNjYuMjcsMjEuNzIgNjYuNSwyMS43MiBDNjEuODg5MTMwNywyMS4zNTkwMjIxIDU4LjMzNTg5MTQsMTcuNTA0OTU2NCA1OC4zNSwxMi44OCBaIiBpZD0i6Lev5b6EIiBmaWxsPSIjMjVGNEVFIj48L3BhdGg+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik02OC41MSw0LjA0IEM2OC4yNyw0LjA0IDY3Ljk2LDQuMDQgNjcuNzMsNC4wNCBDNzIuMzE0NDYsNC40MTg2NTYzNyA3NS44NDIzMzI1LDguMjQ5OTI4ODkgNzUuODQyMzMyNSwxMi44NSBDNzUuODQyMzMyNSwxNy40NTAwNzExIDcyLjMxNDQ2LDIxLjI4MTM0MzYgNjcuNzMsMjEuNjYgQzY3Ljk2LDIxLjY2IDY4LjI3LDIxLjY2IDY4LjUxLDIxLjY2IEM3My4zOTIxOTcyLDIxLjY2IDc3LjM1LDE3LjcwMjE5NzIgNzcuMzUsMTIuODIgQzc3LjM1LDcuOTM3ODAyODEgNzMuMzkyMTk3MiwzLjk4IDY4LjUxLDMuOTggTDY4LjUxLDQuMDQgWiIgaWQ9Iui3r+W+hCIgZmlsbD0iI0ZFMkM1NSI+PC9wYXRoPgogICAgICAgICAgICA8cGF0aCBkPSJNNjcuMTEsMTcuMTggQzY0LjczNTE3NTYsMTcuMTggNjIuODEsMTUuMjU0ODI0NCA2Mi44MSwxMi44OCBDNjIuODEsMTAuNTA1MTc1NiA2NC43MzUxNzU2LDguNTggNjcuMTEsOC41OCBDNjkuNDg0ODI0NCw4LjU4IDcxLjQxLDEwLjUwNTE3NTYgNzEuNDEsMTIuODggQzcxLjQwNDUwMTYsMTUuMjUyNTQzMiA2OS40ODI1NDMyLDE3LjE3NDUwMTYgNjcuMTEsMTcuMTggTDY3LjExLDE3LjE4IFogTTY3LjExLDQuMDQgQzYyLjIyNzgwMjgsNC4wNCA1OC4yNyw3Ljk5NzgwMjgxIDU4LjI3LDEyLjg4IEM1OC4yNywxNy43NjIxOTcyIDYyLjIyNzgwMjgsMjEuNzIgNjcuMTEsMjEuNzIgQzcxLjk5MjE5NzIsMjEuNzIgNzUuOTUsMTcuNzYyMTk3MiA3NS45NSwxMi44OCBDNzUuOTUsMTAuNTM1NDg2MiA3NS4wMTg2NDU1LDguMjg2OTk3NjQgNzMuMzYwODIzOSw2LjYyOTE3NjA1IEM3MS43MDMwMDI0LDQuOTcxMzU0NDcgNjkuNDU0NTEzOCw0LjA0IDY3LjExLDQuMDQgWiIgaWQ9IuW9oueKtiIgZmlsbD0iIzAwMDAwMCI+PC9wYXRoPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+">
-		<h1 class="mt-5">Download <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjlweCIgaGVpZ2h0PSIzMnB4IiB2aWV3Qm94PSIwIDAgMjkgMzIiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDU1LjIgKDc4MTgxKSAtIGh0dHBzOi8vc2tldGNoYXBwLmNvbSAtLT4KICAgIDx0aXRsZT7nvJbnu4QgMjwvdGl0bGU+CiAgICA8ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz4KICAgIDxnIGlkPSLpobXpnaIxIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8ZyBpZD0i57yW57uELTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAuOTc5MjM2LCAwLjAwMDAwMCkiIGZpbGwtcnVsZT0ibm9uemVybyI+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0xMC43OTA3NjQ1LDEyLjMzIEwxMC43OTA3NjQ1LDExLjExIEMxMC4zNjcyNjI5LDExLjA0Mjg4ODcgOS45Mzk1MDY3NCwxMS4wMDYxMjg0IDkuNTEwNzY0NDgsMTAuOTk5OTc4NiBDNS4zNTk5NjU0OSwxMC45OTEyMjI4IDEuNjg1MDk2NzksMTMuNjgxMDIwNSAwLjQzODY2NzY5NCwxNy42NDAyNjU4IEMtMC44MDc3NjEzOTksMjEuNTk5NTExMiAwLjY2MzUwNTg0MiwyNS45MDkzODg3IDQuMDcwNzY0NDgsMjguMjggQzEuNTE4NDg0ODQsMjUuNTQ4NDgxNiAwLjgwOTc5OTU0NSwyMS41NzIwODM0IDIuMjYxMjY4MTcsMTguMTI3MDA1MyBDMy43MTI3MzY3OSwxNC42ODE5MjczIDcuMDUzMjk1NDUsMTIuNDExNTQyOCAxMC43OTA3NjQ1LDEyLjMzIEwxMC43OTA3NjQ1LDEyLjMzIFoiIGlkPSLot6/lvoQiIGZpbGw9IiMyNUY0RUUiPjwvcGF0aD4KICAgICAgICAgICAgPHBhdGggZD0iTTExLjAyMDc2NDUsMjYuMTUgQzEzLjM0MTUyODcsMjYuMTQ2ODc3NiAxNS4yNDkxNjYyLDI0LjMxODU0MTQgMTUuMzUwNzY0NSwyMiBMMTUuMzUwNzY0NSwxLjMxIEwxOS4xMzA3NjQ1LDEuMzEgQzE5LjA1MzYwNjgsMC44Nzc2ODIzMjIgMTkuMDE2NzgxOCwwLjQzOTEzMDk5MiAxOS4wMjA3NjQ1LDAgTDEzLjg1MDc2NDUsMCBMMTMuODUwNzY0NSwyMC42NyBDMTMuNzY0Nzk4LDIzLjAwMDMzODggMTEuODUyNjg1MywyNC44NDYyMTIgOS41MjA3NjQ0OCwyNC44NSBDOC44MjM5MDkxNCwyNC44NDQwNjcgOC4xMzg0Mjg4NCwyNC42NzI2OTY5IDcuNTIwNzY0NDgsMjQuMzUgQzguMzMyNjgyNDUsMjUuNDc0OTE1NCA5LjYzMzQ2MjAzLDI2LjE0Mzg4NzggMTEuMDIwNzY0NSwyNi4xNSBaIiBpZD0i6Lev5b6EIiBmaWxsPSIjMjVGNEVFIj48L3BhdGg+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik0yNi4xOTA3NjQ1LDguMzMgTDI2LjE5MDc2NDUsNy4xOCBDMjQuNzk5NjQsNy4xODA0NzYyNSAyMy40MzkzNzgxLDYuNzY5OTYyNDIgMjIuMjgwNzY0NSw2IEMyMy4yOTY0NDQ2LDcuMTgwNzE3NjkgMjQuNjY4OTYyMiw3Ljk5ODYxMTc3IDI2LjE5MDc2NDUsOC4zMyBMMjYuMTkwNzY0NSw4LjMzIFoiIGlkPSLot6/lvoQiIGZpbGw9IiMyNUY0RUUiPjwvcGF0aD4KICAgICAgICAgICAgPHBhdGggZD0iTTIyLjI4MDc2NDUsNiBDMjEuMTM5NDY3NSw0LjcwMDMzMTYxIDIwLjUxMDI5NjcsMy4wMjk2NTIxNiAyMC41MTA3NjQ1LDEuMyBMMTkuMTMwNzY0NSwxLjMgQzE5LjQ5MDk4MTIsMy4yMzI2ODUxOSAyMC42MzAwMzgzLDQuOTMyMjMwNjcgMjIuMjgwNzY0NSw2IEwyMi4yODA3NjQ1LDYgWiIgaWQ9Iui3r+W+hCIgZmlsbD0iI0ZFMkM1NSI+PC9wYXRoPgogICAgICAgICAgICA8cGF0aCBkPSJNOS41MTA3NjQ0OCwxNi4xNyBDNy41MTkyMTgxNCwxNi4xODAyMTc4IDUuNzkwMjE2MjYsMTcuNTQ0NTkzIDUuMzE3MjEyMDEsMTkuNDc5MTgwMyBDNC44NDQyMDc3NywyMS40MTM3Njc3IDUuNzQ4NjA5NTYsMjMuNDIyMDA2OSA3LjUxMDc2NDQ4LDI0LjM1IEM2LjU1NTk0ODM0LDIzLjAzMTc3MTggNi40MjEwNjg3MSwyMS4yODk0MzM2IDcuMTYxNjI4ODMsMTkuODM5OTYxMyBDNy45MDIxODg5NiwxOC4zOTA0ODg5IDkuMzkzMDY3MzQsMTcuNDc4Nzc4MiAxMS4wMjA3NjQ1LDE3LjQ4IEMxMS40NTQ3NzUyLDE3LjQ4NTQwODQgMTEuODg1NzkwOCwxNy41NTI3NTQ2IDEyLjMwMDc2NDUsMTcuNjggTDEyLjMwMDc2NDUsMTIuNDIgQzExLjg3Njk5MTksMTIuMzU2NTA1NiAxMS40NDkyNTYyLDEyLjMyMzA4ODcgMTEuMDIwNzY0NSwxMi4zMiBMMTAuNzkwNzY0NSwxMi4zMiBMMTAuNzkwNzY0NSwxNi4zMiBDMTAuMzczNjM2OCwxNi4yMDgxNTQ0IDkuOTQyNDQ5MzQsMTYuMTU3NjI0NiA5LjUxMDc2NDQ4LDE2LjE3IFoiIGlkPSLot6/lvoQiIGZpbGw9IiNGRTJDNTUiPjwvcGF0aD4KICAgICAgICAgICAgPHBhdGggZD0iTTI2LjE5MDc2NDUsOC4zMyBMMjYuMTkwNzY0NSwxMi4zMyBDMjMuNjE1NDcsMTIuMzI1MDE5MyAyMS4xMDcwMjUsMTEuNTA5ODYyMiAxOS4wMjA3NjQ1LDEwIEwxOS4wMjA3NjQ1LDIwLjUxIEMxOS4wMDk3MzUyLDI1Ljc1NDQxNTggMTQuNzU1MTkxOSwzMC4wMDAwMTE2IDkuNTEwNzY0NDgsMzAgQzcuNTYzMTI3ODQsMzAuMDAzNDU1NiA1LjY2MjQwMzIxLDI5LjQwMjQ5MTIgNC4wNzA3NjQ0OCwyOC4yOCBDNi43MjY5ODY3NCwzMS4xMzY4MTA4IDEwLjg2MDgyNTcsMzIuMDc3MTk4OSAxNC40OTE0NzA2LDMwLjY1MDU1ODYgQzE4LjEyMjExNTUsMjkuMjIzOTE4MyAyMC41MDk5Mzc1LDI1LjcyMDg4MjUgMjAuNTEwNzY0NSwyMS44MiBMMjAuNTEwNzY0NSwxMS4zNCBDMjIuNjA0MDI0LDEyLjgzOTk2NjMgMjUuMTE1NTcyNCwxMy42NDQ1MDEzIDI3LjY5MDc2NDUsMTMuNjQgTDI3LjY5MDc2NDUsOC40OSBDMjcuMTg2NTkyNSw4LjQ4ODM5NTM1IDI2LjY4MzkzMTMsOC40MzQ3NzgxNiAyNi4xOTA3NjQ1LDguMzMgWiIgaWQ9Iui3r+W+hCIgZmlsbD0iI0ZFMkM1NSI+PC9wYXRoPgogICAgICAgICAgICA8cGF0aCBkPSJNMTkuMDIwNzY0NSwyMC41MSBMMTkuMDIwNzY0NSwxMCBDMjEuMTEzNDA4NywxMS41MDExODk4IDIzLjYyNTM2MjMsMTIuMzA1ODU0NiAyNi4yMDA3NjQ1LDEyLjMgTDI2LjIwMDc2NDUsOC4zIEMyNC42NzkyNTQyLDcuOTc4NzEyNjUgMjMuMzAzNDQwMyw3LjE3MTQ3NDkxIDIyLjI4MDc2NDUsNiBDMjAuNjMwMDM4Myw0LjkzMjIzMDY3IDE5LjQ5MDk4MTIsMy4yMzI2ODUxOSAxOS4xMzA3NjQ1LDEuMyBMMTUuMzUwNzY0NSwxLjMgTDE1LjM1MDc2NDUsMjIgQzE1LjI3NTE1MjEsMjMuODQ2NzY2NCAxNC4wMzgxOTkxLDI1LjQ0MzAyMDEgMTIuMjY4NzY5LDI1Ljk3NzIzMDIgQzEwLjQ5OTMzODksMjYuNTExNDQwMyA4LjU4NTcwOTQyLDI1Ljg2NjM4MTUgNy41MDA3NjQ0OCwyNC4zNyBDNS43Mzg2MDk1NiwyMy40NDIwMDY5IDQuODM0MjA3NzcsMjEuNDMzNzY3NyA1LjMwNzIxMjAxLDE5LjQ5OTE4MDMgQzUuNzgwMjE2MjYsMTcuNTY0NTkzIDcuNTA5MjE4MTQsMTYuMjAwMjE3OCA5LjUwMDc2NDQ4LDE2LjE5IEM5LjkzNDkwMywxNi4xOTM4NjkzIDEwLjM2NjEzODYsMTYuMjYxMjQ5OSAxMC43ODA3NjQ1LDE2LjM5IEwxMC43ODA3NjQ1LDEyLjM5IEM3LjAyMjMzNzksMTIuNDUzNjY5MSAzLjY1NjUzOTI5LDE0LjczMTk3NjggMi4yMDA5NDU2MSwxOC4xOTc2NzYxIEMwLjc0NTM1MTkzOCwyMS42NjMzNzUzIDEuNDc0OTQ0OTMsMjUuNjYxNzQ3NiA0LjA2MDc2NDQ4LDI4LjM5IEM1LjY2ODA5NTQyLDI5LjQ3NTUwNjMgNy41NzE1ODc4MiwzMC4wMzc4MjI0IDkuNTEwNzY0NDgsMzAgQzE0Ljc1NTE5MTksMzAuMDAwMDExNiAxOS4wMDk3MzUyLDI1Ljc1NDQxNTggMTkuMDIwNzY0NSwyMC41MSBaIiBpZD0i6Lev5b6EIiBmaWxsPSIjMDAwMDAwIj48L3BhdGg+CiAgICAgICAgPC9nPgogICAgPC9nPgo8L3N2Zz4="> <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iOTdweCIgaGVpZ2h0PSIyMnB4IiB2aWV3Qm94PSIwIDAgOTcgMjIiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDU1LjIgKDc4MTgxKSAtIGh0dHBzOi8vc2tldGNoYXBwLmNvbSAtLT4KICAgIDx0aXRsZT7nvJbnu4Q8L3RpdGxlPgogICAgPGRlc2M+Q3JlYXRlZCB3aXRoIFNrZXRjaC48L2Rlc2M+CiAgICA8ZyBpZD0i6aG16Z2iMSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICAgICAgPGcgaWQ9Iue8lue7hCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC43NzAwMDAsIDAuMjgwMDAwKSIgZmlsbC1ydWxlPSJub256ZXJvIj4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iIzAwMDAwMCIgcG9pbnRzPSIzLjU1MjcxMzY4ZS0xNSAwLjA2IDE2LjEyIDAuMDYgMTQuNjQgNC43MiAxMC40NiA0LjcyIDEwLjQ2IDIxLjcyIDUuMjMgMjEuNzIgNS4yMyA0LjcyIDAuMDEgNC43MiI+PC9wb2x5Z29uPgogICAgICAgICAgICA8cG9seWdvbiBpZD0i6Lev5b6EIiBmaWxsPSIjMDAwMDAwIiBwb2ludHM9IjQyLjUyIDAuMDYgNTkuMDEgMC4wNiA1Ny41MyA0LjcyIDUyLjk5IDQuNzIgNTIuOTkgMjEuNzIgNDcuNzcgMjEuNzIgNDcuNzcgNC43MiA0Mi41MyA0LjcyIj48L3BvbHlnb24+CiAgICAgICAgICAgIDxwb2x5Z29uIGlkPSLot6/lvoQiIGZpbGw9IiMwMDAwMDAiIHBvaW50cz0iMTcuMSA2Ljk1IDIyLjI3IDYuOTUgMjIuMjcgMjEuNzIgMTcuMTQgMjEuNzIiPjwvcG9seWdvbj4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iIzAwMDAwMCIgcG9pbnRzPSIyNC4zMiAwIDI5LjQ4IDAgMjkuNDggMTAuMDkgMzQuNiA1LjA5IDQwLjc2IDUuMDkgMzQuMjkgMTEuMzcgNDEuNTQgMjEuNzIgMzUuODUgMjEuNzIgMzEuMDEgMTQuNTMgMjkuNDggMTYuMDEgMjkuNDggMjEuNzIgMjQuMzIgMjEuNzIiPjwvcG9seWdvbj4KICAgICAgICAgICAgPHBvbHlnb24gaWQ9Iui3r+W+hCIgZmlsbD0iIzAwMDAwMCIgcG9pbnRzPSI3OS4wMSAwIDg0LjIzIDAgODQuMjMgMTAuMDkgODkuMzQgNS4wOSA5NS41IDUuMDkgODkuMDMgMTEuMzcgOTYuMjMgMjEuNzIgOTAuNTQgMjEuNzIgODUuNzEgMTQuNTMgODQuMjMgMTYuMDEgODQuMjMgMjEuNzIgNzkuMDYgMjEuNzIiPjwvcG9seWdvbj4KICAgICAgICAgICAgPGNpcmNsZSBpZD0i5qSt5ZyG5b2iIiBmaWxsPSIjMDAwMDAwIiBjeD0iMTkuNjkiIGN5PSIyLjY2IiByPSIyLjYiPjwvY2lyY2xlPgogICAgICAgICAgICA8cGF0aCBkPSJNNTguMzUsMTIuODggQzU4LjM1MTU4MTQsOC4yNjY1NzI2OSA2MS45MDA2NDc1LDQuNDMwMDk3NTggNjYuNSw0LjA3IEM2Ni4yNyw0LjA3IDY1Ljk2LDQuMDcgNjUuNzMsNC4wNyBDNjEuMDU1Njk0Niw0LjM0MjY0OTU3IDU3LjQwNDc1NzIsOC4yMTI3NDk1OCA1Ny40MDQ3NTcyLDEyLjg5NSBDNTcuNDA0NzU3MiwxNy41NzcyNTA0IDYxLjA1NTY5NDYsMjEuNDQ3MzUwNCA2NS43MywyMS43MiBDNjUuOTYsMjEuNzIgNjYuMjcsMjEuNzIgNjYuNSwyMS43MiBDNjEuODg5MTMwNywyMS4zNTkwMjIxIDU4LjMzNTg5MTQsMTcuNTA0OTU2NCA1OC4zNSwxMi44OCBaIiBpZD0i6Lev5b6EIiBmaWxsPSIjMjVGNEVFIj48L3BhdGg+CiAgICAgICAgICAgIDxwYXRoIGQ9Ik02OC41MSw0LjA0IEM2OC4yNyw0LjA0IDY3Ljk2LDQuMDQgNjcuNzMsNC4wNCBDNzIuMzE0NDYsNC40MTg2NTYzNyA3NS44NDIzMzI1LDguMjQ5OTI4ODkgNzUuODQyMzMyNSwxMi44NSBDNzUuODQyMzMyNSwxNy40NTAwNzExIDcyLjMxNDQ2LDIxLjI4MTM0MzYgNjcuNzMsMjEuNjYgQzY3Ljk2LDIxLjY2IDY4LjI3LDIxLjY2IDY4LjUxLDIxLjY2IEM3My4zOTIxOTcyLDIxLjY2IDc3LjM1LDE3LjcwMjE5NzIgNzcuMzUsMTIuODIgQzc3LjM1LDcuOTM3ODAyODEgNzMuMzkyMTk3MiwzLjk4IDY4LjUxLDMuOTggTDY4LjUxLDQuMDQgWiIgaWQ9Iui3r+W+hCIgZmlsbD0iI0ZFMkM1NSI+PC9wYXRoPgogICAgICAgICAgICA8cGF0aCBkPSJNNjcuMTEsMTcuMTggQzY0LjczNTE3NTYsMTcuMTggNjIuODEsMTUuMjU0ODI0NCA2Mi44MSwxMi44OCBDNjIuODEsMTAuNTA1MTc1NiA2NC43MzUxNzU2LDguNTggNjcuMTEsOC41OCBDNjkuNDg0ODI0NCw4LjU4IDcxLjQxLDEwLjUwNTE3NTYgNzEuNDEsMTIuODggQzcxLjQwNDUwMTYsMTUuMjUyNTQzMiA2OS40ODI1NDMyLDE3LjE3NDUwMTYgNjcuMTEsMTcuMTggTDY3LjExLDE3LjE4IFogTTY3LjExLDQuMDQgQzYyLjIyNzgwMjgsNC4wNCA1OC4yNyw3Ljk5NzgwMjgxIDU4LjI3LDEyLjg4IEM1OC4yNywxNy43NjIxOTcyIDYyLjIyNzgwMjgsMjEuNzIgNjcuMTEsMjEuNzIgQzcxLjk5MjE5NzIsMjEuNzIgNzUuOTUsMTcuNzYyMTk3MiA3NS45NSwxMi44OCBDNzUuOTUsMTAuNTM1NDg2MiA3NS4wMTg2NDU1LDguMjg2OTk3NjQgNzMuMzYwODIzOSw2LjYyOTE3NjA1IEM3MS43MDMwMDI0LDQuOTcxMzU0NDcgNjkuNDU0NTEzOCw0LjA0IDY3LjExLDQuMDQgWiIgaWQ9IuW9oueKtiIgZmlsbD0iIzAwMDAwMCI+PC9wYXRoPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+" alt="TikTok"> video easily!</h1>
-		<h4><b>Script last modified:</b> <span style="color:#236c82;font-style:italic"><?php date_default_timezone_set('UTC'); echo date("F d Y H:i:s A", filemtime(__FILE__)); ?> (UTC)</span> <a href="https://github.com/TufayelLUS/TikTok-Video-Downloader-PHP/commits/master" rel="nofollow" title="Click to view commits history in github" target="_blank">Check Logs</a></h4>
-		
-	</div>
-	<div class="text-center">
-		Paste a video url below and press "Download". Now scroll down to "Download Video" button or "Download Watermark Free!" button and press to initiate the download process.<br><br>
-		<form method="POST" class="mt-2">
-			<input type="text" placeholder="https://www.tiktok.com/@username/video/1234567890123456789" class="mb-3" name="tiktok-url"><br><br>
-			<button class="btn btn-success" type="submit">Download</button>
-		</form>
-	</div>
-	<?php
-		if (isset($_POST['tiktok-url']) && !empty($_POST['tiktok-url'])) {
-			$url = trim($_POST['tiktok-url']);
-			$resp = getContent($url);
-			//echo "$resp";
-			$check = explode('"downloadAddr":"', $resp);
-			if (count($check) > 1){
-				$contentURL = explode("\"",$check[1])[0];
-                $contentURL = str_replace("\\u0026", "&", $contentURL);
-				$thumb = explode("\"",explode('og:image" content="', $resp)[1])[0];
-				$username = explode('/',explode('"$pageUrl":"/@', $resp)[1])[0];
-				$create_time = explode(',', explode('"createTime":', $resp)[1])[0];
-				$dt = new DateTime("@$create_time");
-				$create_time = $dt->format("d M Y H:i:s A");
-				$videoKey = getKey($contentURL);
-				$cleanVideo = "https://api2-16-h2.musical.ly/aweme/v1/play/?video_id=$videoKey&vr_type=0&is_play_url=1&source=PackSourceEnum_PUBLISH&media_type=4";
-				$cleanVideo = getContent($cleanVideo, true);
-				if (!file_exists("user_videos") && $store_locally){
-					mkdir("user_videos");
-				}
-				if ($store_locally){
-					?>
-                    <script type="text/javascript">
-                        $(document).ready(function(){
-                            $('#wmarked_link').text("Please wait ...");
-                            $.get('./<?php echo basename($_SERVER['PHP_SELF']); ?>?url=<?php echo urlencode($contentURL); ?>').done(function(data)
-                                {
-                                    $('#wmarked_link').removeAttr('disabled');
-                                    $('#wmarked_link').attr('onclick', 'window.location.href="' + data + '"');
-                                    $('#wmarked_link').text("Download Video");
-                                });
-                        });
-                    </script>
-                    <?php
-				}
-		?>
-		<script>
-		    $(document).ready(function(){
-		        $('html, body').animate({
-					    scrollTop: ($('#result').offset().top)
-					},1000);
-		    });
-		</script>
-	<div class="border m-3 mb-5" id="result">
-	    <div class="text-center"><br>Bot/Scraper Development Services: <a target="_blank" href="https://www.we-can-solve.com">We-Can-Solve.com</a></div>
-		<div class="row m-0 p-2">
-			<div class="col-sm-5 col-md-5 col-lg-5 text-center"><img width="250px" height="250px" src="<?php echo $thumb; ?>"></div>
-			<div class="col-sm-6 col-md-6 col-lg-6 text-center mt-5"><ul style="list-style: none;padding: 0px">
-				<li>a video by <b>@<?php echo $username; ?></b></li>
-				<li>uploaded on <b><?php echo $create_time; ?></b></li>
-				<li><button id="wmarked_link" disabled="disabled" class="btn btn-primary mt-3" onclick="window.location.href='<?php if ($store_locally){ echo $filename;} else { echo $contentURL; } ?>'">Download Video</button> <button class="btn btn-info mt-3" onclick="window.location.href='<?php echo $cleanVideo; ?>'">Download Watermark Free!</button></li>
-				<li><div class="alert alert-primary mb-0 mt-3">If the video opens directly, try saving it by pressing CTRL+S or on phone, save from three dots in the bottom left corner</div></li>
-			</ul></div>
-		</div>
-	</div>
-	<?php
-			}
-			else
-			{
-				?>
-				<script>
-        		    $(document).ready(function(){
-        		        $('html, body').animate({
-        					    scrollTop: ($('#result').offset().top)
-        					},1000);
-        		    });
-        		</script>
-				<div class="mx-5 px-5 my-3" id="result">
-				    <div class="text-center"><br>Bot/Scraper Development Services: <a target="_blank" href="https://www.we-can-solve.com">We-Can-Solve.com</a></div>
-					<div class="alert alert-danger mb-0"><b>Please double check your url and try again.</b></div>
-				</div>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      <meta name="description" content="A complete landing page solution for any business">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" href="assets/img/favicon/favicon.ico">
+      <title>SEO Landing Page</title>
+      <link href="https://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet">
+      <link rel="stylesheet" href="assets/vendor/strokegap/style.css">
+      <link rel="stylesheet" href="assets/vendor/font-awesome/css/font-awesome.min.css">
+      <link rel="stylesheet" href="assets/vendor/linearicons/style.css">
+      <link rel="stylesheet" href="assets/css/bundle.css">
+      <link rel="stylesheet" href="assets/css/style.css">
+   </head>
+   <body id="top">
 
-				<?php
-			}
-		}
-	?>
-	<div class="m-5">
-		&nbsp;
-	</div>
-	<div class="bg-dark text-white" style="position: fixed; bottom: 0;width: 100%;padding:15px">Developed by <a target="_blank" href="https://www.github.com/TufayelLUS">tufayel.rocks</a> <span style="float: right;">Copyright &copy; <?php echo date("Y"); ?></span></div>
-    <script type="text/javascript">
-        window.setInterval(function(){
-            if ($("input[name='tiktok-url']").attr("placeholder") == "https://www.tiktok.com/@username/video/1234567890123456789") {
-                $("input[name='tiktok-url']").attr("placeholder", "https://vm.tiktok.com/a1b2c3/");
-            }
-            else
-            {
-                $("input[name='tiktok-url']").attr("placeholder", "https://www.tiktok.com/@username/video/1234567890123456789");
-            }
-        }, 3000);
-    </script>
-</body>
+      <header class="header header-shrink header-inverse fixed-top">
+         <div class="container">
+            <nav class="navbar navbar-expand-lg">
+               <a class="navbar-brand" href="">
+                  <span class="logo-default">
+                     <h2 class="text-white">Devdap</h2>
+                  </span>
+                  <span class="logo-inverse">
+                     <h2 class="text-green">Devdap</h2>
+                  </span>
+               </a>
+               <button class="navbar-toggler p-0" data-toggle="collapse" data-target="#navbarNav">
+                  <div class="hamburger hamburger--spin js-hamburger">
+                     <div class="hamburger-box">
+                        <div class="hamburger-inner"></div>
+                     </div>
+                  </div>
+               </button>
+               <div class="collapse navbar-collapse" id="navbarNav">
+                  <ul class="navbar-nav ml-auto">
+                     <li class="nav-item">
+                        <a class="nav-link" href="#" data-scrollto="features">FEATURES</a>
+                     </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="#" data-scrollto="case">case</a>
+                     </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="#" data-scrollto="reviews">REVIEWS</a>
+                     </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="#" data-scrollto="pricing">pricing</a>
+                     </li>
+                    
+                  </ul>
+               </div>
+            </nav>
+         </div>
+      </header>
+      <section class="u-py-100 u-h-100vh u-flex-center" style="background:url(assets/img/seo/hero-banner.png) no-repeat;background-size:cover;background-position:top center">
+         <div class="container">
+            <div class="row">
+               <div class="col-lg-8 mx-auto">
+                  <h1 class="text-center text-white mb-5">Do you want more traffic?</h1>
+                  <p class="text-center text-white mb-5">Do you want more traffic, leads, and sales? Enter your URL below.<br>if you want to grow your traffic and revenue.</p>
+                  <div class="col-lg-9 mx-auto">
+                     <form class="form-inline align-items-stretch" action="#" metod="get">
+                        <div class="form-group u-flex-1">
+                           <input type="email" class="form-control p-3 u-w-100p border-0" placeholder="Enter your website Url">
+                        </div>
+                        <button type="submit" class="btn btn-green">
+                        Analyze
+                        </button>
+                     </form>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section id="features" class="bg-light1">
+         <div class="container">
+            <div class="row text-center">
+               <div class="col-md-4 u-mt-30">
+                  <div class="bg-white px-5 u-py-50 u-h-100p rounded">
+                     <img class="u-w-100" src="assets/img/svg/seo.svg" alt="">
+                     <h4 class="u-fs-26 u-my-35">
+                        Content Submission
+                     </h4>
+                     <p class="mb-0">
+                        Nam liber tempor cum soluta nobis eleifend option congue is nihil imper per tem.
+                     </p>
+                  </div>
+               </div>
+               <div class="col-md-4 u-mt-30">
+                  <div class="bg-white px-5 u-py-50 u-h-100p rounded">
+                     <img class="u-w-100" src="assets/img/svg/pie-chart.svg" alt="">
+                     <h4 class="u-fs-26 u-my-35">
+                        Real-Time Analytics
+                     </h4>
+                     <p class="mb-0">
+                        Nam liber tempor cum soluta nobis eleifend option congue is nihil imper per tem.
+                     </p>
+                  </div>
+               </div>
+               <div class="col-md-4 u-mt-30">
+                  <div class="bg-white px-5 u-py-50 u-h-100p rounded">
+                     <img class="u-w-100" src="assets/img/svg/protractor.svg" alt="">
+                     <h4 class="u-fs-26 u-my-35">
+                        Unlimited Support
+                     </h4>
+                     <p class="mb-0">
+                        Nam liber tempor cum soluta nobis eleifend option congue is nihil imper per tem.
+                     </p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section class="bg-light1">
+         <div class="container">
+            <div class="row">
+               <div class="col-lg-8 m-auto text-center">
+                  <h1 class="text-orange">
+                     For All Your SEO And <br> Online Marketing Needs
+                  </h1>
+                  <div class="u-h-4 u-w-50 bg-blue-light rounded mt-4 u-mb-70 mx-auto"></div>
+                  <p>
+                     Nam liber tempor cum soluta nobis eleifend option congue is nihil imper is per tem por legere me that doming vulputate velit esse molestie possim. wisi enim ad placerat facer possim assum minim there veniam, nostrud exerci tation ullamcorper quis nostrud exerci tation ullamcorper. Nam is tempor cum soluta nobis eleifend option congue is nihil imper.
+                  </p>
+                  <div class="row">
+                     <div class="col-md-4 mt-5">
+                        <h4 class="u-fs-48 u-fw-400 text-green mb-0">260</h4>
+                        <p class="u-fs-20 u-ff-dosis">Countries</p>
+                     </div>
+                     <div class="col-md-4 mt-5">
+                        <h4 class="u-fs-48 u-fw-400 text-green mb-0">2590</h4>
+                        <p class="u-fs-20 u-ff-dosis">Online Strategies</p>
+                     </div>
+                     <div class="col-md-4 mt-5">
+                        <h4 class="u-fs-48 u-fw-400 text-green mb-0">98k</h4>
+                        <p class="u-fs-20 u-ff-dosis">Highest Rankings</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-12 u-mt-80 text-center">
+                  <img src="assets/img/seo/s-2.png" alt="">
+               </div>
+            </div>
+         </div>
+      </section>
+      <section class="bg-green-light2">
+         <div class="container">
+            <div class="row">
+               <div class="col-12 text-center">
+                  <h1 class="text-white">
+                     We Offer a Full Range of <br>Digital Marketing Services!
+                  </h1>
+                  <div class="u-h-4 u-w-50 bg-orange-light rounded mt-4 u-mb-40 mx-auto"></div>
+               </div>
+            </div>
+            <div class="row align-items-center">
+               <div class="col-lg-6 my-4">
+                  <img src="assets/img/seo/s-3.png" alt="">
+               </div>
+               <div class="col-lg-5 ml-auto mt-5 mb-4">
+                  <h2 class="u-mb-30">
+                     Social Media Marketing
+                  </h2>
+                  <p class="text-white-light">
+                     Nam liber tempor cum soluta nobis eleifend option congue is nihil imper iper tem por legere me that doming vulputate velit esse molestie possim. wisi enim ad placerat facer possim the assum minim there veniam, nostrud exerci tation ullamcorper quis nostrud exerci tation ullamcorper.
+                  </p>
+               </div>
+            </div>
+            <div class="row align-items-center">
+               <div class="col-lg-6 my-4 order-2 order-lg-1">
+                  <h2 class="u-mb-30">
+                     Email Marketing
+                  </h2>
+                  <p class="text-white-light">
+                     Nam liber tempor cum soluta nobis eleifend option congue is nihil imper iper tem por legere me that doming vulputate velit esse molestie possim. wisi enim ad placerat facer possim the assum minim there veniam, nostrud exerci tation ullamcorper quis nostrud exerci tation ullamcorper.
+                  </p>
+               </div>
+               <div class="col-lg-5 ml-auto mt-5 mb-4 order-1 order-lg-2">
+                  <img src="assets/img/seo/s-4.png" alt="">
+               </div>
+            </div>
+            <div class="row align-items-center">
+               <div class="col-lg-6 my-4">
+                  <img src="assets/img/seo/s-5.png" alt="">
+               </div>
+               <div class="col-lg-5 ml-auto mt-5 mb-4">
+                  <h2 class="u-mb-30">
+                     SEO Services Optimization
+                  </h2>
+                  <p class="text-white-light">
+                     Nam liber tempor cum soluta nobis eleifend option congue is nihil imper iper tem por legere me that doming vulputate velit esse molestie possim. wisi enim ad placerat facer possim the assum minim there veniam, nostrud exerci tation ullamcorper quis nostrud exerci tation ullamcorper.
+                  </p>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section style="background:#f0f0f0 url(assets/img/seo/stars2.png) no-repeat;background-size:cover">
+         <div class="container">
+            <div class="row">
+               <div class="col-lg-5 mr-auto mb-5 mb-lg-0">
+                  <h1 class="text-orange">
+                  Why We’re The Best Match For Your Business!!
+                  </h2>
+                  <div class="u-h-4 u-w-50 bg-blue-light rounded mt-4 u-mb-40"></div>
+                  <p class="my-3">
+                     Nam liber tempor cum soluta nobis eleifend option congue is nihil imper iper tem por legere me that doming vulputate velit esse molestie possim.
+                  </p>
+                  <ul class="list-unstyled u-fw-600 u-lh-2 u-my-40">
+                     <li><i class="fa fa-check text-green mr-2"></i>Professional and easy-to-use software</li>
+                     <li><i class="fa fa-check text-green mr-2"></i>Setup and installations takes ten minutes</li>
+                     <li><i class="fa fa-check text-green mr-2"></i>Perfect for any device with pixel-perfect design</li>
+                  </ul>
+                  <a href="#" class="btn btn-rounded btn-green">Get Free Quote</a>
+               </div>
+               <div class="col-lg-6">
+                  <img class="w-100 box-shadow-v1" src="assets/img/seo/s-6.jpg" alt="">
+                  <a href="" data-init="popup-video" class="u-pos-abs-center text-green">
+                  <span class="icon icon-Play u-fs-48 u-fs-md-72"></span>
+                  </a>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section>
+         <div class="container">
+            <div class="row">
+               <div class="col-12 text-center">
+                  <h2 class="h1">
+                     Affordable SEO <br> Services Packages
+                  </h2>
+                  <div class="u-h-4 u-w-50 bg-green rounded mt-4 mx-auto"></div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-lg-4 col-md-6 u-mt-70">
+                  <div class="media">
+                     <img class="d-flex mr-4 u-w-70" src="assets/img/svg/pie-shart-up.svg" alt="Generic placeholder image">
+                     <div class="media-body">
+                        <h4>
+                           Advanced Analytics
+                        </h4>
+                        <p>
+                           Nam liber tempor cum soluta nois eleifend option congue is nihil tem imper per tem por legere.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-4 col-md-6 u-mt-70">
+                  <div class="media">
+                     <img class="d-flex mr-4 u-w-70" src="assets/img/svg/web-mail.svg" alt="Generic placeholder image">
+                     <div class="media-body">
+                        <h4>
+                           Backlink Building
+                        </h4>
+                        <p>
+                           Nam liber tempor cum soluta nois eleifend option congue is nihil tem imper per tem por legere.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-4 col-md-6 u-mt-70">
+                  <div class="media">
+                     <img class="d-flex mr-4 u-w-70" src="assets/img/svg/paper-key.svg" alt="Generic placeholder image">
+                     <div class="media-body">
+                        <h4>
+                           Custom Email Design
+                        </h4>
+                        <p>
+                           Nam liber tempor cum soluta nois eleifend option congue is nihil tem imper per tem por legere.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-4 col-md-6 u-mt-70">
+                  <div class="media">
+                     <img class="d-flex mr-4 u-w-70" src="assets/img/svg/compass.svg" alt="Generic placeholder image">
+                     <div class="media-body">
+                        <h4>
+                           Paid Search Advertising
+                        </h4>
+                        <p>
+                           Nam liber tempor cum soluta nois eleifend option congue is nihil tem imper per tem por legere.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-4 col-md-6 u-mt-70">
+                  <div class="media">
+                     <img class="d-flex mr-4 u-w-70" src="assets/img/svg/search.svg" alt="Generic placeholder image">
+                     <div class="media-body">
+                        <h4>
+                           Keyword Research
+                        </h4>
+                        <p>
+                           Nam liber tempor cum soluta nois eleifend option congue is nihil tem imper per tem por legere.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-4 col-md-6 u-mt-70">
+                  <div class="media">
+                     <img class="d-flex mr-4 u-w-70" src="assets/img/svg/traffic-lights.svg" alt="Generic placeholder image">
+                     <div class="media-body">
+                        <h4>
+                           PPC Management
+                        </h4>
+                        <p>
+                           Nam liber tempor cum soluta nois eleifend option congue is nihil tem imper per tem por legere.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section id="reviews" class="pb-0 bg-gray-v2" style="background:url(assets/img/seo/bg-3.jpg) no-repeat;background-size:100% calc(100% - 90px)">
+         <div class="container">
+            <div class="row">
+               <div class="col-lg-6 m-auto text-center">
+                  <h1 class="">
+                     What Customer Says
+                  </h1>
+                  <div class="u-h-4 u-w-50 bg-white rounded mt-4 u-mb-70 mx-auto"></div>
+               </div>
+            </div>
+            <div data-init="carousel" data-slick='{
+               "slidesToShow":3,
+               "slidesToScroll": 1,
+               "arrows":true,
+               "prevArrow":"<div class=\"slick-prev box-shadow-v1\"><i class=\"fa fa-angle-left\"></i></div>",
+               "nextArrow":"<div class=\"slick-next box-shadow-v1\"><i class=\"fa fa-angle-right\"></i></div>",
+               "responsive": [
+               {
+               "breakpoint":1024,
+               "settings":{
+               "slidesToShow": 2,
+               "arrows":false,
+               "dots":true,
+               "dotsClass":"slick-dots text-center mt-3"
+               }
+               },
+               {
+               "breakpoint":600,
+               "settings":{
+               "slidesToShow": 1,
+               "arrows":false,
+               "dots":true,
+               "dotsClass":"slick-dots text-center mt-3"
+               }
+               }
+               ]
+               }' data-slick-margin="15">
+               <div class="p-5 mb-4 rounded bg-white text-center u-h-100p">
+                  <p>
+                     Nam liber tempor cum soluta nobis ele fend option congue is nihil imper per tem por legere me doming vulputate esse molestie possim wisi enim.
+                  </p>
+                  <img class="rounded-circle u-w-80 mx-auto u-mt-40 u-mb-20" src="assets/img/person/vector-1.png" alt="">
+                  <h4 class="u-mb-5">
+                     Alex Petrou
+                  </h4>
+                  <p class="text-muted">
+                     Creative Director
+                  </p>
+               </div>
+               <div class="p-5 mb-4 rounded bg-white text-center u-h-100p">
+                  <p>
+                     Nam liber tempor cum soluta nobis ele fend option congue is nihil imper per tem por legere me doming vulputate esse molestie possim wisi enim.
+                  </p>
+                  <img class="rounded-circle u-w-80 mx-auto u-mt-40 u-mb-20" src="assets/img/person/vector-2.png" alt="">
+                  <h4 class="u-mb-5">
+                     Bryson
+                  </h4>
+                  <p class="text-muted">
+                     Creative Director
+                  </p>
+               </div>
+               <div class="p-5 mb-4 rounded bg-white text-center u-h-100p">
+                  <p>
+                     Nam liber tempor cum soluta nobis ele fend option congue is nihil imper per tem por legere me doming vulputate esse molestie possim wisi enim.
+                  </p>
+                  <img class="rounded-circle u-w-80 mx-auto u-mt-40 u-mb-20" src="assets/img/person/vector-3.png" alt="">
+                  <h4 class="u-mb-5">
+                     John Doe
+                  </h4>
+                  <p class="text-muted">
+                     Creative Director
+                  </p>
+               </div>
+               <div class="p-5 mb-4 rounded bg-white text-center u-h-100p">
+                  <p>
+                     Nam liber tempor cum soluta nobis ele fend option congue is nihil imper per tem por legere me doming vulputate esse molestie possim wisi enim.
+                  </p>
+                  <img class="rounded-circle u-w-80 mx-auto u-mt-40 u-mb-20" src="assets/img/person/vector-2.png" alt="">
+                  <h4 class="u-mb-5">
+                     Bryson
+                  </h4>
+                  <p class="text-muted">
+                     Creative Director
+                  </p>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section id="pricing" class="bg-light1 u-py-100">
+         <div class="container text-center">
+            <div class="row">
+               <div class="col-12">
+                  <h2 class="h1">Fair & Simple Pricing</h2>
+                  <div class="u-h-4 u-w-50 bg-green rounded mt-4 u-mb-20 mx-auto"></div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-md-4 mt-5">
+                  <div class="bg-white rounded u-pb-20">
+                     <h4 class="m-0 py-4">
+                        Free
+                     </h4>
+                     <hr class="m-0">
+                     <h2 class="u-fs-60 u-fw-600 u-py-35 text-green"><sup class="u-fs-20">$</sup>0.00</h2>
+                     <hr class="m-0">
+                     <ul class="list-unstyled u-py-40 u-lh-2">
+                        <li>searchable message</li>
+                        <li>apps and service</li>
+                        <li>file storage per team</li>
+                        <li>Monthly Bandwidth</li>
+                     </ul>
+                     <hr class="m-0">
+                     <div class="u-py-40">
+                        <a href="#" class="btn btn-green btn-rounded">
+                        Get Started
+                        </a>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-4 mt-5">
+                  <div class="bg-gray-v2 rounded u-pb-20">
+                     <h4 class="m-0 py-4">
+                        Standard
+                     </h4>
+                     <hr class="m-0">
+                     <h2 class="u-fs-60 u-fw-600 u-py-35 text-orange"><sup class="u-fs-20">$</sup>9.50</h2>
+                     <hr class="m-0">
+                     <ul class="list-unstyled u-py-40 u-lh-2">
+                        <li>searchable message</li>
+                        <li>apps and service</li>
+                        <li>file storage per team</li>
+                        <li>Monthly Bandwidth</li>
+                     </ul>
+                     <hr class="m-0">
+                     <div class="u-py-40">
+                        <a href="#" class="btn btn-orange btn-rounded">
+                        Get Started
+                        </a>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-4 mt-5">
+                  <div class="bg-white rounded u-pb-20">
+                     <h4 class="m-0 py-4">
+                        Business
+                     </h4>
+                     <hr class="m-0">
+                     <h2 class="u-fs-60 u-fw-600 u-py-35 text-green"><sup class="u-fs-20">$</sup>17.99</h2>
+                     <hr class="m-0">
+                     <ul class="list-unstyled u-py-40 u-lh-2">
+                        <li>searchable message</li>
+                        <li>apps and service</li>
+                        <li>file storage per team</li>
+                        <li>Monthly Bandwidth</li>
+                     </ul>
+                     <hr class="m-0">
+                     <div class="u-py-40">
+                        <a href="#" class="btn btn-green btn-rounded">
+                        Get Started
+                        </a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section class="bg-blue-light u-py-70">
+         <div class="container">
+            <div class="row">
+               <div class="col-lg-8 mx-auto">
+                  <h2 class="text-center text-white mb-5">Subscribe To Receive Free Update!</h2>
+                  <form class="form-inline align-items-stretch">
+                     <div class="form-group mr-md-4 u-flex-1">
+                        <input type="email" class="form-control p-3 u-w-100p border-0" placeholder="Enter your email address">
+                     </div>
+                     <button type="submit" class="btn btn-orange">
+                     Subscribe
+                     </button>
+                  </form>
+               </div>
+            </div>
+         </div>
+      </section>
+      <section class="u-py-100">
+         <div class="container">
+            <div class="row">
+               <div class="col-12 d-md-flex justify-content-between">
+                  <div class="p-3">
+                     <img src="assets/img/partner/micosoft.png" alt="">
+                  </div>
+                  <div class="p-3">
+                     <img src="assets/img/partner/envato.png" alt="">
+                  </div>
+                  <div class="p-3">
+                     <img src="assets/img/partner/dribbble.png" alt="">
+                  </div>
+                  <div class="p-3">
+                     <img src="assets/img/partner/google.png" alt="">
+                  </div>
+                  <div class="p-3">
+                     <img src="assets/img/partner/micosoft.png" alt="">
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <footer>
+         <section class="bg-orange-light">
+            <div class="container">
+               <div class="row">
+                  <div class="col-lg-4 col-md-6 mb-5">
+                     <h2 class="text-white">Devdap</h2>
+                     <p class="u-my-40 text-white-light">
+                        Nam liber tempor cum soluta nobis eleifend they option congue is nihil
+                        imper per tem por legere is me velit doming vulputate.
+                        Nam liber tempor cum soluta nobis eleifend they option congue is nihil
+                        imper per tem por legere is me velit doming vulputate.
+                     </p>
+                  </div>
+                  <div class="col-lg-2 col-md-6 mb-5 ml-auto">
+                     <h4 class="text-white">Useful Links</h4>
+                     <div class="u-h-4 u-w-50 bg-light1 rounded mt-3 u-mb-40"></div>
+                     <ul class="list-unstyled u-lh-2 text-white-light">
+                        <li class="mb-3"><a href="#">App Landing</a></li>
+                        <li class="mb-3"><a href="#">Software Landing</a></li>
+                        <li class="mb-3"><a href="#">SEO Landing</a></li>
+                        <li class="mb-3"><a href="#">Startup Landing</a></li>
+                        <li class="mb-3"><a href="#">Product Landing</a></li>
+                     </ul>
+                  </div>
+                  <div class="col-lg-2 col-md-6 mb-5 ml-auto">
+                     <h4 class="text-white">Useful Links</h4>
+                     <div class="u-h-4 u-w-50 bg-light1 rounded mt-3 u-mb-40"></div>
+                     <ul class="list-unstyled u-lh-2 text-white-light">
+                        <li class="mb-3"><a href="#">About Us </a> </li>
+                        <li class="mb-3"><a href="#">Testimonials </a> </li>
+                        <li class="mb-3"><a href="#">Pricing </a> </li>
+                        <li class="mb-3"><a href="#">Contact Us</a></li>
+                        <li class="mb-3"><a href="#">News </a> </li>
+                     </ul>
+                  </div>
+                  <div class="col-lg-3 col-md-6 mb-5 ml-auto">
+                     <h4 class="text-white">Contact Info</h4>
+                     <div class="u-h-4 u-w-50 bg-light1 rounded mt-3 u-mb-40"></div>
+                     <ul class="list-unstyled text-white-light">
+                        <li class="mb-3">
+                           <span class="icon icon-Phone2 text-green mr-2"></span> 008. 567. 890. 634
+                        </li>
+                        <li class="mb-3">
+                           <span class="icon icon-Mail text-green mr-2"></span> <a href="mailto:support@devdaptheme.com">support@devdaptheme.com</a>
+                        </li>
+                        <li class="mb-3">
+                           <span class="icon icon-Pointer text-green mr-2"></span> Punjab, Pakistan
+                        </li>
+                     </ul>
+                     <ul class="list-inline social social-rounded mt-4">
+                        <li class="list-inline-item">
+                           <a href="#"><i class="fa fa-facebook"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                           <a href="#"><i class="fa fa-twitter"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                           <a href="#"><i class="fa fa-google-plus"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                           <a href="#"><i class="fa fa-linkedin"></i></a>
+                        </li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <section class="u-py-40 bg-light1">
+            <div class="container">
+               <p class="mb-0 text-center">
+                  &copy; Copyright 2018 - Created by <a class="text-green" href="https://devdap.com" target="_blank">devdapTheme</a>
+               </p>
+            </div>
+         </section>
+      </footer>
+      <div class="scroll-top bg-white box-shadow-v1">
+         <i class="fa fa-angle-up" aria-hidden="true"></i>
+      </div>
+      <script src="assets/js/bundle.js"></script>
+      <script src="assets/js/devdap.js"></script>
+   </body>
 </html>
